@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="education-page">
+    <h1 class="page-title">EDUCATION & CERTIFICATIONS</h1>
+    
+    <div class="education-container">
+        {% for edu in education %}
+        <div class="education-item">
+            <div class="education-year">{{ edu.start_year }} - {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}</div>
+            <div class="education-content">
+                <h3>{{ edu.title }}</h3>
+                <h4>{{ edu.institution }}</h4>
+                {% if edu.description %}
+                    <p class="education-description">{{ edu.description }}</p>
+                {% endif %}
+                <span class="education-type">{{ edu.get_type_display }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">No education added yet.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<style>
+.education-page {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 3rem;
+    color: #1f2937;
+    position: relative;
+    display: inline-block;
+}
+
+.page-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: #3b82f6;
+}
+
+.education-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.education-item {
+    display: flex;
+    gap: 2rem;
+    padding: 1.5rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.education-item:hover {
+    transform: translateX(10px);
+    border-color: #3b82f6;
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1);
+}
+
+.education-year {
+    min-width: 120px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #3b82f6;
+    font-size: 1rem;
+    font-weight: 500;
+    padding-top: 0.25rem;
+}
+
+.education-content {
+    flex: 1;
+}
+
+.education-content h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.education-content h4 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #4b5563;
+    margin-bottom: 0.75rem;
+}
+
+.education-description {
+    color: #4b5563;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.education-type {
+    display: inline-block;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid #3b82f6;
+    border-radius: 4px;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.8rem;
+    color: #3b82f6;
+}
+
+.text-muted {
+    color: #6b7280;
+    text-align: center;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .education-item {
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1.25rem;
+    }
+    
+    .education-item:hover {
+        transform: translateX(5px);
+    }
+    
+    .education-year {
+        min-width: auto;
+    }
+}
+</style>
+{% endblock %}

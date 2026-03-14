@@ -1,0 +1,533 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="manage-section">
+    <div class="section-header">
+        <h1>CONTACT MESSAGES</h1>
+    </div>
+    
+    <div id="messages-container" class="messages-container">
+        {% if reply_success %}
+            <div class="alert-message success">{{ reply_success }}</div>
+        {% endif %}
+        {% if reply_error %}
+            <div class="alert-message error">{{ reply_error }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="messages-list">
+        {% for msg in messages_list %}
+        <div class="message-card {% if not msg.is_read %}unread{% endif %}" id="message-{{ msg.pk }}" data-message-id="{{ msg.pk }}">
+            <div class="message-header">
+                <div class="message-sender">
+                    <strong>{{ msg.name }}</strong>
+                    <span class="message-email">{{ msg.email }}</span>
+                </div>
+                <div class="message-date">{{ msg.created_at|date:'F d, Y H:i' }}</div>
+            </div>
+            
+            <div class="message-body">
+                {{ msg.message|linebreaks }}
+            </div>
+            
+            <div class="message-footer">
+                <button class="reply-btn" onclick="showReplyForm({{ msg.pk }})">✉ Reply</button>
+                <button class="mark-read-btn" onclick="toggleRead({{ msg.pk }})">
+                    {% if msg.is_read %}Mark Unread{% else %}Mark Read{% endif %}
+                </button>
+                <button class="delete-btn" onclick="deleteMessage({{ msg.pk }})">🗑 Delete</button>
+            </div>
+            
+            <div class="reply-form" id="reply-form-{{ msg.pk }}" style="display: none;">
+                <form method="POST" action="{% url 'send_reply' msg.pk %}">
+                    {% csrf_token %}
+                    <div class="reply-to">
+                        Replying to: <strong>{{ msg.name }}</strong> &lt;{{ msg.email }}&gt;
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subject-{{ msg.pk }}">Subject</label>
+                        <input type="text" id="subject-{{ msg.pk }}" name="subject" value="Re: Contact from your portfolio" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message-{{ msg.pk }}">Message</label>
+                        <textarea id="message-{{ msg.pk }}" name="message" rows="6" placeholder="Type your reply here..." required></textarea>
+                    </div>
+                    
+                    <div class="reply-actions">
+                        <button type="submit" class="send-btn">Send Reply</button>
+                        <button type="button" class="cancel-btn" onclick="hideReplyForm({{ msg.pk }})">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">No messages yet.</p>
+        {% endfor %}
+    </div>
+    
+    {% if messages_list.has_other_pages %}
+    <div class="pagination">
+        {% if messages_list.has_previous %}
+            <a href="?page={{ messages_list.previous_page_number }}" class="pagination-btn">←</a>
+        {% endif %}
+        
+        <span class="current-page">Page {{ messages_list.number }} of {{ messages_list.paginator.num_pages }}</span>
+        
+        {% if messages_list.has_next %}
+            <a href="?page={{ messages_list.next_page_number }}" class="pagination-btn">→</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+:root {
+    --admin-purple: #8b5cf6;
+    --admin-purple-dark: #7c3aed;
+    --admin-purple-light: #a78bfa;
+    --admin-purple-glow: rgba(139, 92, 246, 0.2);
+    --admin-bg: #ffffff;
+    --admin-text: #1f2937;
+    --admin-text-secondary: #4b5563;
+    --admin-text-muted: #6b7280;
+    --admin-border: #e5e7eb;
+    --admin-card: #f9fafb;
+    --admin-danger: #ef4444;
+}
+
+.manage-section {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-header {
+    margin-bottom: 2rem;
+}
+
+.section-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--admin-text);
+}
+
+.messages-container {
+    margin-bottom: 2rem;
+    min-height: 60px;
+}
+
+.alert-message {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid var(--admin-purple);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: var(--admin-purple-dark);
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+    font-weight: 500;
+}
+
+.alert-message.error {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--admin-danger);
+    color: var(--admin-danger);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.message-card {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.message-card.unread {
+    border-left: 4px solid var(--admin-purple);
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.message-sender {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.message-sender strong {
+    color: var(--admin-text);
+    font-size: 1.1rem;
+}
+
+.message-email {
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+}
+
+.message-date {
+    color: var(--admin-text-muted);
+    font-size: 0.9rem;
+}
+
+.message-body {
+    color: var(--admin-text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    white-space: pre-wrap;
+}
+
+.message-footer {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.reply-btn, .mark-read-btn, .delete-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    font-weight: 500;
+}
+
+.reply-btn {
+    background: var(--admin-purple);
+    color: #ffffff;
+}
+
+.reply-btn:hover {
+    background: var(--admin-purple-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--admin-purple-glow);
+}
+
+.mark-read-btn {
+    background: transparent;
+    border: 1px solid var(--admin-border);
+    color: var(--admin-text-secondary);
+}
+
+.mark-read-btn:hover {
+    border-color: var(--admin-purple);
+    color: var(--admin-purple);
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.delete-btn {
+    background: transparent;
+    border: 1px solid var(--admin-danger);
+    color: var(--admin-danger);
+}
+
+.delete-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    transform: translateY(-2px);
+}
+
+.mark-read-btn.sending, .delete-btn.sending {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+.reply-form {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.reply-to {
+    color: var(--admin-text-secondary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--admin-border);
+    font-size: 0.95rem;
+}
+
+.reply-to strong {
+    color: var(--admin-text);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: var(--admin-text);
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 150px;
+    background: #ffffff;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--admin-purple);
+    box-shadow: 0 0 0 3px var(--admin-purple-glow);
+}
+
+.reply-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.send-btn, .cancel-btn {
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.send-btn {
+    background: var(--admin-purple);
+    color: #ffffff;
+}
+
+.send-btn:hover {
+    background: var(--admin-purple-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--admin-purple-glow);
+}
+
+.cancel-btn {
+    background: transparent;
+    border: 1px solid var(--admin-border);
+    color: var(--admin-text-secondary);
+}
+
+.cancel-btn:hover {
+    border-color: var(--admin-danger);
+    color: var(--admin-danger);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.pagination-btn {
+    color: var(--admin-text-secondary);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--admin-border);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    background: var(--admin-card);
+}
+
+.pagination-btn:hover {
+    border-color: var(--admin-purple);
+    color: var(--admin-purple);
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.current-page {
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+}
+
+.text-muted {
+    color: var(--admin-text-muted);
+    text-align: center;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .message-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .message-footer {
+        flex-direction: column;
+    }
+    
+    .reply-actions {
+        flex-direction: column;
+    }
+    
+    .send-btn, .cancel-btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+function showReplyForm(messageId) {
+    event.preventDefault();
+    hideAllReplyForms();
+    document.getElementById('reply-form-' + messageId).style.display = 'block';
+    document.getElementById('subject-' + messageId).focus();
+}
+
+function hideReplyForm(messageId) {
+    document.getElementById('reply-form-' + messageId).style.display = 'none';
+}
+
+function hideAllReplyForms() {
+    var forms = document.querySelectorAll('[id^="reply-form-"]');
+    forms.forEach(function(form) {
+        form.style.display = 'none';
+    });
+}
+
+function toggleRead(messageId) {
+    const button = event.target;
+    const messageCard = document.getElementById('message-' + messageId);
+    const isRead = messageCard.classList.contains('unread');
+    
+    button.classList.add('sending');
+    button.textContent = isRead ? 'Marking as Read...' : 'Marking as Unread...';
+    
+    fetch("{% url 'mark_message_read' 0 %}".replace('0', messageId), {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            message_id: messageId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.is_read) {
+                messageCard.classList.remove('unread');
+                button.textContent = 'Mark Unread';
+            } else {
+                messageCard.classList.add('unread');
+                button.textContent = 'Mark Read';
+            }
+            showMessage('Message status updated', 'success');
+        } else {
+            showMessage('Error updating status', 'error');
+            button.textContent = isRead ? 'Mark Read' : 'Mark Unread';
+        }
+    })
+    .catch(error => {
+        showMessage('Error updating status', 'error');
+        button.textContent = isRead ? 'Mark Read' : 'Mark Unread';
+    })
+    .finally(() => {
+        button.classList.remove('sending');
+    });
+}
+
+function deleteMessage(messageId) {
+    if (!confirm('Delete this message?')) return;
+    
+    const button = event.target;
+    const messageCard = document.getElementById('message-' + messageId);
+    
+    button.classList.add('sending');
+    button.textContent = 'Deleting...';
+    
+    fetch("{% url 'delete_message' 0 %}".replace('0', messageId), {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            messageCard.remove();
+            showMessage('Message deleted', 'success');
+            if (document.querySelectorAll('.message-card').length === 0) {
+                location.reload();
+            }
+        } else {
+            showMessage('Error deleting message', 'error');
+            button.textContent = 'Delete';
+        }
+    })
+    .catch(error => {
+        showMessage('Error deleting message', 'error');
+        button.textContent = 'Delete';
+    })
+    .finally(() => {
+        button.classList.remove('sending');
+    });
+}
+
+function showMessage(text, type) {
+    const container = document.getElementById('messages-container');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'alert-message ' + type;
+    msgDiv.textContent = text;
+    container.appendChild(msgDiv);
+    
+    setTimeout(() => msgDiv.remove(), 5000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        document.querySelectorAll('.alert-message').forEach(msg => msg.remove());
+    }, 5000);
+});
+</script>
+{% endblock %}

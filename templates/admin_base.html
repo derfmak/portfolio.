@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Fredrick Makau Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --admin-purple: #8b5cf6;
+            --admin-purple-dark: #7c3aed;
+            --admin-purple-light: #a78bfa;
+            --admin-purple-glow: rgba(139, 92, 246, 0.2);
+            --admin-bg: #ffffff;
+            --admin-text: #1f2937;
+            --admin-text-secondary: #4b5563;
+            --admin-text-muted: #6b7280;
+            --admin-border: #e5e7eb;
+            --admin-card: #f9fafb;
+            --admin-danger: #ef4444;
+            --transition-speed: 0.3s;
+            --container-width: 1400px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--admin-bg);
+            color: var(--admin-text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--admin-purple);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: #ffffff;
+            text-decoration: none;
+            transition: opacity var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            opacity: 0.9;
+        }
+
+        .admin-badge {
+            background: #ffffff;
+            color: var(--admin-purple);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin-left: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #ffffff;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: #ffffff;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: #ffffff;
+        }
+
+        .nav-link.active::after {
+            width: 100%;
+            background: #ffffff;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 10;
+        }
+
+        .mobile-menu-btn span {
+            width: 100%;
+            height: 3px;
+            background: #ffffff;
+            border-radius: 3px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .mobile-menu-btn.active span:nth-child(1) {
+            transform: translateY(9px) rotate(45deg);
+        }
+
+        .mobile-menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-btn.active span:nth-child(3) {
+            transform: translateY(-9px) rotate(-45deg);
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: var(--container-width);
+            margin: 100px auto 0;
+            padding: 40px 24px 80px;
+            width: 100%;
+            background: #ffffff;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .admin-footer {
+            background: var(--admin-purple);
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .footer-container {
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 0 24px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.85rem;
+        }
+
+        .footer-container a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity var(--transition-speed) ease;
+        }
+
+        .footer-container a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .messages-container {
+            max-width: 800px;
+            margin: 0 auto 2rem;
+        }
+
+        .message {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid var(--admin-purple);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: var(--admin-purple);
+            text-align: center;
+            animation: slideIn 0.3s ease;
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--admin-danger);
+            color: var(--admin-danger);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+            }
+            
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                right: 0;
+                background: var(--admin-purple-dark);
+                flex-direction: column;
+                align-items: center;
+                padding: 2rem;
+                gap: 1.5rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                transform: translateY(-150%);
+                opacity: 0;
+                transition: all var(--transition-speed) ease;
+                pointer-events: none;
+            }
+            
+            .nav-menu.active {
+                transform: translateY(0);
+                opacity: 1;
+                pointer-events: all;
+            }
+            
+            .nav-link {
+                font-size: 1.2rem;
+                padding: 0.75rem 0;
+                color: rgba(255, 255, 255, 0.9);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-logo {
+                font-size: 1.2rem;
+            }
+            
+            .main-content {
+                margin-top: 80px;
+                padding: 20px 16px 60px;
+            }
+            
+            .admin-badge {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div style="display: flex; align-items: center;">
+                <a href="{% url 'dashboard' %}" class="nav-logo">FREDRICK MAKAU</a>
+                <span class="admin-badge">ADMIN</span>
+            </div>
+            
+            <button class="mobile-menu-btn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <ul class="nav-menu">
+                <li><a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a></li>
+                <li><a href="{% url 'manage_experience' %}" class="nav-link">Experience</a></li>
+                <li><a href="{% url 'manage_projects' %}" class="nav-link">Projects</a></li>
+                <li><a href="{% url 'manage_education' %}" class="nav-link">Education</a></li>
+                <li><a href="{% url 'manage_messages' %}" class="nav-link">Messages</a></li>
+                <li><a href="{% url 'edit_profile' %}" class="nav-link">Profile</a></li>
+                <li><a href="{% url 'logout' %}" class="nav-link" style="color: #ffffff; background: rgba(239, 68, 68, 0.3); padding: 0.5rem 1rem; border-radius: 6px;">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="admin-footer">
+        <div class="footer-container">
+            <p>Admin Panel • Logged in as {{ request.user.username }} • <a href="{% url 'home' %}" target="_blank">View Public Site</a></p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            const navMenu = document.querySelector('.nav-menu');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const body = document.body;
+            
+            function setActiveLink() {
+                const currentPath = window.location.pathname;
+                
+                navLinks.forEach(link => {
+                    const href = link.getAttribute('href');
+                    link.classList.remove('active');
+                    
+                    if (href === currentPath) {
+                        link.classList.add('active');
+                    } else if (currentPath === '/' && href === '/') {
+                        link.classList.add('active');
+                    } else if (href !== '/' && currentPath.startsWith(href)) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+            
+            function closeMenu() {
+                navMenu.classList.remove('active');
+                menuBtn.classList.remove('active');
+                body.style.overflow = '';
+            }
+            
+            function toggleMenu() {
+                navMenu.classList.toggle('active');
+                menuBtn.classList.toggle('active');
+                
+                if (navMenu.classList.contains('active')) {
+                    body.style.overflow = 'hidden';
+                } else {
+                    body.style.overflow = '';
+                }
+            }
+            
+            if (menuBtn && navMenu) {
+                menuBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleMenu();
+                });
+            }
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    closeMenu();
+                });
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (navMenu.classList.contains('active') && 
+                    !navMenu.contains(e.target) && 
+                    !menuBtn.contains(e.target)) {
+                    closeMenu();
+                }
+            });
+            
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    closeMenu();
+                }
+            });
+            
+            setActiveLink();
+            
+            setTimeout(function() {
+                const messages = document.querySelectorAll('.message');
+                messages.forEach(function(message) {
+                    message.style.transition = 'opacity 0.5s ease';
+                    message.style.opacity = '0';
+                    setTimeout(function() {
+                        if (message.parentNode) {
+                            message.remove();
+                        }
+                    }, 500);
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

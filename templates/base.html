@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fredrick Makau - Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">FREDRICK MAKAU</a>
+            <button class="mobile-menu-btn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link">About</a></li>
+                <li><a href="/experience/" class="nav-link">Experience</a></li>
+                <li><a href="/projects/" class="nav-link">Projects</a></li>
+                <li><a href="/education/" class="nav-link">Education</a></li>
+                <li><a href="/resume/" class="nav-link">Resume</a></li>
+                <li><a href="/contact/" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <a href="mailto:fredrickwambua129@gmail.com">fredrickwambua129@gmail.com</a>
+            <span class="footer-separator">|</span>
+            <a href="https://github.com/derfmak" target="_blank">github.com/derfmak</a>
+            <span class="footer-separator">|</span>
+            <a href="https://www.linkedin.com/in/fredrick-makau-04312b220/" target="_blank">linkedin.com/in/fredrick-makau</a>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

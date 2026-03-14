@@ -1,0 +1,547 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1>DASHBOARD</h1>
+        <div class="header-actions">
+            <span class="welcome-text">Welcome, {{ request.user.username }}</span>
+            <a href="{% url 'logout' %}" class="btn-outline">LOGOUT</a>
+        </div>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ projects_count|default:'0' }}</div>
+            <div class="stat-label">Total Projects</div>
+            <a href="{% url 'manage_projects' %}" class="stat-link">Manage →</a>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value">{{ experiences_count|default:'0' }}</div>
+            <div class="stat-label">Work Experience</div>
+            <a href="{% url 'manage_experience' %}" class="stat-link">Manage →</a>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value">{{ education_count|default:'0' }}</div>
+            <div class="stat-label">Education</div>
+            <a href="{% url 'manage_education' %}" class="stat-link">Manage →</a>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value">{{ messages_count|default:'0' }}</div>
+            <div class="stat-label">Unread Messages</div>
+            <a href="{% url 'manage_messages' %}" class="stat-link">View →</a>
+        </div>
+    </div>
+    
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2>PROFILE</h2>
+                <a href="{% url 'edit_profile' %}" class="btn-small">EDIT</a>
+            </div>
+            <div class="card-content">
+                {% if profile %}
+                    <p><strong>Name:</strong> {{ profile.name }}</p>
+                    <p><strong>Title:</strong> {{ profile.title }}</p>
+                    <p><strong>Email:</strong> {{ profile.email }}</p>
+                {% else %}
+                    <p class="text-muted">No profile set up</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2>RESUME</h2>
+            </div>
+            <div class="card-content">
+                {% if resume %}
+                    <p>Uploaded: {{ resume.uploaded_at|date:'M d, Y' }}</p>
+                {% else %}
+                    <p class="text-muted">No resume uploaded</p>
+                {% endif %}
+                
+                <form method="POST" action="{% url 'upload_resume' %}" enctype="multipart/form-data" class="upload-form">
+                    {% csrf_token %}
+                    <input type="file" name="file" accept=".pdf,.doc,.docx" required>
+                    <button type="submit" class="btn-small btn-primary">UPLOAD</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2>QUICK ACTIONS</h2>
+            </div>
+            <div class="quick-actions">
+                <a href="{% url 'add_experience' %}" class="action-link">+ Add Experience</a>
+                <a href="{% url 'add_project' %}" class="action-link">+ Add Project</a>
+                <a href="{% url 'add_education' %}" class="action-link">+ Add Education</a>
+                <a href="{% url 'manage_messages' %}" class="action-link">📬 View Messages</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="dashboard-section" id="recent-experience">
+        <div class="section-header">
+            <h2>RECENT EXPERIENCE</h2>
+            <a href="{% url 'manage_experience' %}" class="view-all">View All →</a>
+        </div>
+        
+        <div class="items-list">
+            {% for exp in experiences|slice:":5" %}
+            <div class="list-item">
+                <div class="item-content">
+                    <h3>{{ exp.position }}</h3>
+                    <p class="item-subtitle">{{ exp.company }} • {{ exp.location }}</p>
+                    <p class="item-date">{{ exp.start_date|date:'M Y' }} - {% if exp.end_date %}{{ exp.end_date|date:'M Y' }}{% else %}Present{% endif %}</p>
+                </div>
+                <div class="item-actions">
+                    <a href="{% url 'edit_experience' exp.pk %}" class="btn-icon" title="Edit">✎</a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No experience added yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="dashboard-section" id="recent-projects">
+        <div class="section-header">
+            <h2>RECENT PROJECTS</h2>
+            <a href="{% url 'manage_projects' %}" class="view-all">View All →</a>
+        </div>
+        
+        <div class="grid-preview">
+            {% for project in projects|slice:":3" %}
+            <div class="preview-card">
+                {% if project.image %}
+                    <img src="{{ project.image.url }}" alt="{{ project.title }}">
+                {% endif %}
+                <div class="preview-content">
+                    <h4>{{ project.title }}</h4>
+                    <p>{{ project.description|truncatechars:60 }}</p>
+                </div>
+                <div class="preview-actions">
+                    <a href="{% url 'edit_project' project.pk %}" class="btn-icon">✎</a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No projects added yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="dashboard-section" id="recent-messages">
+        <div class="section-header">
+            <h2>RECENT MESSAGES</h2>
+            <a href="{% url 'manage_messages' %}" class="view-all">View All →</a>
+        </div>
+        
+        <div class="messages-preview">
+            {% for msg in recent_messages %}
+            <div class="message-item {% if not msg.is_read %}unread{% endif %}">
+                <div class="message-header">
+                    <strong>{{ msg.name }}</strong>
+                    <span>{{ msg.created_at|date:'M d, H:i' }}</span>
+                </div>
+                <div class="message-preview">{{ msg.message|truncatechars:100 }}</div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No messages yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --admin-purple: #8b5cf6;
+    --admin-purple-dark: #7c3aed;
+    --admin-purple-light: #a78bfa;
+    --admin-purple-glow: rgba(139, 92, 246, 0.2);
+    --admin-bg: #ffffff;
+    --admin-text: #1f2937;
+    --admin-text-secondary: #4b5563;
+    --admin-text-muted: #6b7280;
+    --admin-border: #e5e7eb;
+    --admin-card: #f9fafb;
+    --admin-danger: #ef4444;
+}
+
+.dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.dashboard-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--admin-text);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.welcome-text {
+    color: var(--admin-text-secondary);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--admin-border);
+    color: var(--admin-text-secondary);
+    padding: 0.5rem 1.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-outline:hover {
+    border-color: var(--admin-purple);
+    color: var(--admin-purple);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--admin-purple);
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+}
+
+.stat-link {
+    color: var(--admin-text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.3s ease;
+}
+
+.stat-link:hover {
+    color: var(--admin-purple);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.dashboard-card {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.card-header h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--admin-text);
+}
+
+.btn-small {
+    background: transparent;
+    border: 1px solid var(--admin-border);
+    color: var(--admin-text-secondary);
+    padding: 0.25rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-small:hover {
+    border-color: var(--admin-purple);
+    color: var(--admin-purple);
+}
+
+.btn-primary {
+    background: var(--admin-purple);
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: var(--admin-purple-dark);
+}
+
+.card-content {
+    color: var(--admin-text-secondary);
+    font-size: 0.95rem;
+}
+
+.upload-form {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.upload-form input[type="file"] {
+    flex: 1;
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    border-radius: 6px;
+    padding: 0.5rem;
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+}
+
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.action-link {
+    color: var(--admin-text-secondary);
+    text-decoration: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.action-link:hover {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--admin-purple);
+    padding-left: 1rem;
+}
+
+.dashboard-section {
+    margin-top: 2.5rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--admin-text);
+}
+
+.view-all {
+    color: var(--admin-text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.view-all:hover {
+    color: var(--admin-purple);
+}
+
+.items-list {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.item-content h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin-bottom: 0.25rem;
+}
+
+.item-subtitle {
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.item-date {
+    color: var(--admin-purple);
+    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.item-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-icon {
+    color: var(--admin-text-secondary);
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+
+.btn-icon:hover {
+    color: var(--admin-purple);
+}
+
+.grid-preview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.preview-card {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.preview-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+
+.preview-content {
+    padding: 0.75rem;
+}
+
+.preview-content h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin-bottom: 0.25rem;
+}
+
+.preview-content p {
+    color: var(--admin-text-secondary);
+    font-size: 0.85rem;
+}
+
+.preview-actions {
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid var(--admin-border);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.messages-preview {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.message-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.message-item:last-child {
+    border-bottom: none;
+}
+
+.message-item.unread {
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    color: var(--admin-text);
+    font-size: 0.9rem;
+}
+
+.message-header span {
+    color: var(--admin-text-muted);
+    font-size: 0.85rem;
+}
+
+.message-preview {
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+}
+
+.text-muted {
+    color: var(--admin-text-muted);
+    text-align: center;
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+    .stats-grid,
+    .dashboard-grid,
+    .grid-preview {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .upload-form {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

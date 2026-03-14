@@ -1,0 +1,424 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="contact-page">
+    <h1 class="page-title">CONTACT ME</h1>
+    
+    <div id="messages-container" class="messages-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    
+    <div class="contact-container">
+        <div class="contact-info">
+            <h3>Get in Touch</h3>
+            
+            <div class="info-item">
+                <span class="info-label">Email</span>
+                <a href="mailto:{{ profile.email }}" class="info-value">{{ profile.email }}</a>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">Phone</span>
+                <span class="info-value">{{ profile.phone }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">Location</span>
+                <span class="info-value">{{ profile.location }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">LinkedIn</span>
+                <a href="{{ profile.linkedin }}" target="_blank" class="info-value">{{ profile.linkedin|cut:"https://linkedin.com/in/" }}</a>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">GitHub</span>
+                <a href="{{ profile.github }}" target="_blank" class="info-value">{{ profile.github|cut:"https://github.com/" }}</a>
+            </div>
+        </div>
+        
+        <form class="contact-form" method="POST" id="contactForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+                <div class="error-message" id="nameError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+                <div class="error-message" id="emailError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" rows="5" required></textarea>
+                <div class="error-message" id="messageError"></div>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submitBtn">SEND MESSAGE</button>
+        </form>
+    </div>
+</section>
+
+<style>
+.contact-page {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: #1f2937;
+    position: relative;
+    display: inline-block;
+}
+
+.page-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: #3b82f6;
+}
+
+.messages-container {
+    margin-bottom: 2rem;
+    min-height: 60px;
+}
+
+.message {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid #3b82f6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: #3b82f6;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.message.error {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.contact-container {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 3rem;
+}
+
+.contact-info {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.contact-info h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 2rem;
+}
+
+.info-item {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.info-label {
+    display: block;
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    color: #4b5563;
+    font-size: 1rem;
+    line-height: 1.5;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    word-break: break-all;
+}
+
+a.info-value:hover {
+    color: #3b82f6;
+}
+
+.contact-form {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: #4b5563;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: #1f2937;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.form-group input.error,
+.form-group textarea.error {
+    border-color: #ef4444;
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    min-height: 1.2rem;
+}
+
+.submit-btn {
+    width: 100%;
+    background: #3b82f6;
+    border: none;
+    border-radius: 8px;
+    padding: 1rem;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .contact-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .contact-info,
+    .contact-form {
+        padding: 1.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contactForm');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const messageInput = document.getElementById('message');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    const nameError = document.getElementById('nameError');
+    const emailError = document.getElementById('emailError');
+    const messageError = document.getElementById('messageError');
+    
+    let nameTouched = false;
+    let emailTouched = false;
+    let messageTouched = false;
+    
+    function validateName() {
+        const value = nameInput.value.trim();
+        if (value.length === 0) {
+            if (nameTouched) {
+                nameError.textContent = 'Name is required';
+                nameInput.classList.add('error');
+            } else {
+                nameError.textContent = '';
+                nameInput.classList.remove('error');
+            }
+            return false;
+        } else if (value.length < 2) {
+            if (nameTouched) {
+                nameError.textContent = 'Name must be at least 2 characters';
+                nameInput.classList.add('error');
+            } else {
+                nameError.textContent = '';
+                nameInput.classList.remove('error');
+            }
+            return false;
+        } else {
+            nameError.textContent = '';
+            nameInput.classList.remove('error');
+            return true;
+        }
+    }
+    
+    function validateEmail() {
+        const value = emailInput.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (value.length === 0) {
+            if (emailTouched) {
+                emailError.textContent = 'Email is required';
+                emailInput.classList.add('error');
+            } else {
+                emailError.textContent = '';
+                emailInput.classList.remove('error');
+            }
+            return false;
+        } else if (!emailRegex.test(value)) {
+            if (emailTouched) {
+                emailError.textContent = 'Please enter a valid email address';
+                emailInput.classList.add('error');
+            } else {
+                emailError.textContent = '';
+                emailInput.classList.remove('error');
+            }
+            return false;
+        } else {
+            emailError.textContent = '';
+            emailInput.classList.remove('error');
+            return true;
+        }
+    }
+    
+    function validateMessage() {
+        const value = messageInput.value.trim();
+        if (value.length === 0) {
+            if (messageTouched) {
+                messageError.textContent = 'Message is required';
+                messageInput.classList.add('error');
+            } else {
+                messageError.textContent = '';
+                messageInput.classList.remove('error');
+            }
+            return false;
+        } else if (value.length < 10) {
+            if (messageTouched) {
+                messageError.textContent = 'Message must be at least 10 characters';
+                messageInput.classList.add('error');
+            } else {
+                messageError.textContent = '';
+                messageInput.classList.remove('error');
+            }
+            return false;
+        } else {
+            messageError.textContent = '';
+            messageInput.classList.remove('error');
+            return true;
+        }
+    }
+    
+    function validateForm() {
+        const isNameValid = validateName();
+        const isEmailValid = validateEmail();
+        const isMessageValid = validateMessage();
+        
+        submitBtn.disabled = !(isNameValid && isEmailValid && isMessageValid);
+    }
+    
+    nameInput.addEventListener('input', function() {
+        nameTouched = true;
+        validateForm();
+    });
+    
+    emailInput.addEventListener('input', function() {
+        emailTouched = true;
+        validateForm();
+    });
+    
+    messageInput.addEventListener('input', function() {
+        messageTouched = true;
+        validateForm();
+    });
+    
+    nameInput.addEventListener('blur', function() {
+        nameTouched = true;
+        validateName();
+        validateForm();
+    });
+    
+    emailInput.addEventListener('blur', function() {
+        emailTouched = true;
+        validateEmail();
+        validateForm();
+    });
+    
+    messageInput.addEventListener('blur', function() {
+        messageTouched = true;
+        validateMessage();
+        validateForm();
+    });
+    
+    validateForm();
+    
+    setTimeout(function() {
+        const messages = document.querySelectorAll('.message');
+        messages.forEach(function(message) {
+            message.style.transition = 'opacity 0.5s ease';
+            message.style.opacity = '0';
+            setTimeout(function() {
+                message.remove();
+            }, 500);
+        });
+    }, 10000);
+});
+</script>
+{% endblock %}

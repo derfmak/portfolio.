@@ -1,0 +1,381 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="manage-section">
+    <div class="section-header">
+        <h1>EDUCATION & CERTIFICATIONS</h1>
+    </div>
+    
+    <div class="dual-layout">
+        <div class="form-panel">
+            <h2 class="panel-title">
+                {% if edit_mode %}EDIT ENTRY{% else %}ADD NEW ENTRY{% endif %}
+            </h2>
+            
+            <form method="POST" class="form" {% if edit_mode %}action="{% url 'edit_education' education.id %}"{% else %}action="{% url 'add_education' %}"{% endif %}>
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="type">Type</label>
+                    <select id="type" name="type" required>
+                        <option value="degree" {% if education.type == 'degree' %}selected{% endif %}>Degree</option>
+                        <option value="certification" {% if education.type == 'certification' %}selected{% endif %}>Certification</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" value="{{ education.title|default:'' }}" placeholder="e.g., B.Sc. Computer Science" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="institution">Institution</label>
+                    <input type="text" id="institution" name="institution" value="{{ education.institution|default:'' }}" placeholder="e.g., Egerton University" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="start_year">Start Year</label>
+                        <input type="number" id="start_year" name="start_year" value="{{ education.start_year|default:'' }}" min="1900" max="2100" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="end_year">End Year</label>
+                        <input type="number" id="end_year" name="end_year" value="{{ education.end_year|default:'' }}" min="1900" max="2100">
+                        <small class="field-note">Leave empty if ongoing</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description (Optional)</label>
+                    <textarea id="description" name="description" rows="3">{{ education.description|default:'' }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="order">Display Order</label>
+                    <input type="number" id="order" name="order" value="{{ education.order|default:'0' }}">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        {% if edit_mode %}UPDATE ENTRY{% else %}ADD ENTRY{% endif %}
+                    </button>
+                    {% if edit_mode %}
+                        <a href="{% url 'manage_education' %}" class="btn-secondary">CANCEL</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        
+        <div class="list-panel">
+            <h2 class="panel-title">EXISTING ENTRIES</h2>
+            
+            <div class="items-list">
+                {% for edu in education_list %}
+                <div class="list-item {% if edu.id == request.resolver_match.kwargs.pk %}active{% endif %}">
+                    <div class="item-content">
+                        <div class="item-header">
+                            <h3>{{ edu.title }}</h3>
+                            <span class="item-type-badge {% if edu.type == 'degree' %}degree{% else %}cert{% endif %}">
+                                {{ edu.get_type_display }}
+                            </span>
+                        </div>
+                        <p class="item-subtitle">{{ edu.institution }}</p>
+                        <p class="item-date">{{ edu.start_year }} - {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}</p>
+                        {% if edu.description %}
+                            <p class="item-description">{{ edu.description|truncatechars:100 }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="item-actions">
+                        <a href="{% url 'edit_education' edu.id %}" class="btn-icon" title="Edit">✎</a>
+                        <a href="{% url 'delete_education' edu.id %}" class="btn-icon delete" title="Delete" onclick="return confirm('Delete this entry?')">🗑</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No education entries added yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --admin-purple: #8b5cf6;
+    --admin-purple-dark: #7c3aed;
+    --admin-purple-light: #a78bfa;
+    --admin-purple-glow: rgba(139, 92, 246, 0.2);
+    --admin-bg: #ffffff;
+    --admin-text: #1f2937;
+    --admin-text-secondary: #4b5563;
+    --admin-text-muted: #6b7280;
+    --admin-border: #e5e7eb;
+    --admin-card: #f9fafb;
+    --admin-danger: #ef4444;
+    --admin-blue: #3b82f6;
+}
+
+.manage-section {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-header {
+    margin-bottom: 2rem;
+}
+
+.section-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--admin-text);
+}
+
+.dual-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 2rem;
+}
+
+.form-panel, .list-panel {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.panel-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: var(--admin-text);
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.form-group select {
+    cursor: pointer;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--admin-purple);
+    box-shadow: 0 0 0 3px var(--admin-purple-glow);
+}
+
+.field-note {
+    display: block;
+    color: var(--admin-text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn-primary {
+    background: var(--admin-purple);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    background: var(--admin-purple-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--admin-purple-glow);
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    color: var(--admin-text-secondary);
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-secondary:hover {
+    border-color: var(--admin-purple);
+    color: var(--admin-purple);
+}
+
+.items-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem;
+    border-bottom: 1px solid var(--admin-border);
+    transition: all 0.3s ease;
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.list-item:hover {
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.list-item.active {
+    background: rgba(139, 92, 246, 0.1);
+    border-left: 3px solid var(--admin-purple);
+}
+
+.item-content {
+    flex: 1;
+}
+
+.item-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.item-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--admin-text);
+}
+
+.item-type-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+.item-type-badge.degree {
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--admin-purple);
+    border: 1px solid var(--admin-purple);
+}
+
+.item-type-badge.cert {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--admin-blue);
+    border: 1px solid var(--admin-blue);
+}
+
+.item-subtitle {
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.item-date {
+    color: var(--admin-purple);
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 0.5rem;
+}
+
+.item-description {
+    color: var(--admin-text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.item-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-left: 1rem;
+}
+
+.btn-icon {
+    color: var(--admin-text-secondary);
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+
+.btn-icon:hover {
+    color: var(--admin-purple);
+}
+
+.btn-icon.delete:hover {
+    color: var(--admin-danger);
+}
+
+.text-muted {
+    color: var(--admin-text-muted);
+    text-align: center;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .dual-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .item-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,521 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="manage-section">
+    <div class="section-header">
+        <h1>WORK EXPERIENCE</h1>
+    </div>
+    
+    <div class="triple-layout">
+        <div class="form-panel">
+            <h2 class="panel-title">
+                {% if edit_mode %}EDIT EXPERIENCE{% else %}ADD NEW EXPERIENCE{% endif %}
+            </h2>
+            
+            <form method="POST" class="form" {% if edit_mode %}action="{% url 'edit_experience' experience.id %}"{% else %}action="{% url 'add_experience' %}"{% endif %}>
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="company">Company</label>
+                    <input type="text" id="company" name="company" value="{{ experience.company|default:'' }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="position">Position</label>
+                    <input type="text" id="position" name="position" value="{{ experience.position|default:'' }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location" value="{{ experience.location|default:'' }}" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="start_date">Start Date</label>
+                        <input type="date" id="start_date" name="start_date" value="{{ experience.start_date|date:'Y-m-d'|default:'' }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="end_date">End Date</label>
+                        <input type="date" id="end_date" name="end_date" value="{{ experience.end_date|date:'Y-m-d'|default:'' }}">
+                        <small class="field-note">Leave empty for current position</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="6" required>{{ experience.description|default:'' }}</textarea>
+                    <small class="field-note">Use bullet points, one per line</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="order">Display Order</label>
+                    <input type="number" id="order" name="order" value="{{ experience.order|default:'0' }}">
+                    <small class="field-note">Lower numbers appear first</small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        {% if edit_mode %}UPDATE EXPERIENCE{% else %}ADD EXPERIENCE{% endif %}
+                    </button>
+                    {% if edit_mode %}
+                        <a href="{% url 'manage_experience' %}" class="btn-secondary">CANCEL</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        
+        <div class="list-panel">
+            <h2 class="panel-title">EXISTING EXPERIENCE</h2>
+            
+            <div class="items-list">
+                {% for exp in experiences %}
+                <div class="list-item {% if exp.id == request.resolver_match.kwargs.pk %}active{% endif %}">
+                    <div class="item-content">
+                        <h3>{{ exp.position }}</h3>
+                        <p class="item-subtitle">{{ exp.company }} • {{ exp.location }}</p>
+                        <p class="item-date">{{ exp.start_date|date:'M Y' }} - {% if exp.end_date %}{{ exp.end_date|date:'M Y' }}{% else %}Present{% endif %}</p>
+                        <p class="item-description">{{ exp.description|truncatechars:100 }}</p>
+                    </div>
+                    <div class="item-actions">
+                        <a href="{% url 'edit_experience' exp.id %}" class="btn-icon" title="Edit">✎</a>
+                        <a href="{% url 'delete_experience' exp.id %}" class="btn-icon delete" title="Delete" onclick="return confirm('Delete this experience?')">🗑</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No experience added yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="preview-panel">
+            <h2 class="panel-title">LIVE PREVIEW</h2>
+            <div class="live-preview">
+                <div class="preview-timeline">
+                    {% if edit_mode %}
+                        {% with exp=experience %}
+                        <div class="preview-item">
+                            <div class="preview-dot"></div>
+                            <div class="preview-date">
+                                {{ exp.start_date|date:'M Y' }} - 
+                                {% if exp.end_date %}{{ exp.end_date|date:'M Y' }}{% else %}Present{% endif %}
+                            </div>
+                            <div class="preview-content">
+                                <h3>{{ exp.position|default:'Position Title' }}</h3>
+                                <h4>{{ exp.company|default:'Company Name' }} • {{ exp.location|default:'Location' }}</h4>
+                                <ul class="preview-description">
+                                    {% if exp.description %}
+                                        {% for line in exp.description.splitlines %}
+                                            {% if line.strip %}
+                                                <li>{{ line }}</li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <li>Description will appear here</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% endwith %}
+                    {% else %}
+                        {% for exp in experiences|slice:":3" %}
+                        <div class="preview-item">
+                            <div class="preview-dot"></div>
+                            <div class="preview-date">
+                                {{ exp.start_date|date:'M Y' }} - 
+                                {% if exp.end_date %}{{ exp.end_date|date:'M Y' }}{% else %}Present{% endif %}
+                            </div>
+                            <div class="preview-content">
+                                <h3>{{ exp.position }}</h3>
+                                <h4>{{ exp.company }} • {{ exp.location }}</h4>
+                                <ul class="preview-description">
+                                    {% for line in exp.description.splitlines|slice:":3" %}
+                                        {% if line.strip %}
+                                            <li>{{ line|truncatechars:50 }}</li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="preview-empty">
+                            <p>No experience to preview</p>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="preview-note">
+                    <p>This is how your experience appears on the public page</p>
+                    <a href="{% url 'experience' %}" target="_blank" class="view-live-link">View Live Page →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --admin-purple: #8b5cf6;
+    --admin-purple-dark: #7c3aed;
+    --admin-purple-light: #a78bfa;
+    --admin-purple-glow: rgba(139, 92, 246, 0.2);
+    --admin-bg: #ffffff;
+    --admin-text: #1f2937;
+    --admin-text-secondary: #4b5563;
+    --admin-text-muted: #6b7280;
+    --admin-border: #e5e7eb;
+    --admin-card: #f9fafb;
+    --admin-danger: #ef4444;
+}
+
+.manage-section {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.section-header {
+    margin-bottom: 2rem;
+}
+
+.section-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--admin-text);
+}
+
+.triple-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-panel, .list-panel, .preview-panel {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.panel-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: var(--admin-text);
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--admin-purple);
+    box-shadow: 0 0 0 3px var(--admin-purple-glow);
+}
+
+.field-note {
+    display: block;
+    color: var(--admin-text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn-primary {
+    background: var(--admin-purple);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    background: var(--admin-purple-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--admin-purple-glow);
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    color: var(--admin-text-secondary);
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-secondary:hover {
+    border-color: var(--admin-purple);
+    color: var(--admin-purple);
+}
+
+.items-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem;
+    border-bottom: 1px solid var(--admin-border);
+    transition: all 0.3s ease;
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.list-item:hover {
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.list-item.active {
+    background: rgba(139, 92, 246, 0.1);
+    border-left: 3px solid var(--admin-purple);
+}
+
+.item-content {
+    flex: 1;
+}
+
+.item-content h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin-bottom: 0.25rem;
+}
+
+.item-subtitle {
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.item-date {
+    color: var(--admin-purple);
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 0.5rem;
+}
+
+.item-description {
+    color: var(--admin-text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.item-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-left: 1rem;
+}
+
+.btn-icon {
+    color: var(--admin-text-secondary);
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+
+.btn-icon:hover {
+    color: var(--admin-purple);
+}
+
+.btn-icon.delete:hover {
+    color: var(--admin-danger);
+}
+
+.live-preview {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid var(--admin-border);
+}
+
+.preview-timeline {
+    position: relative;
+    padding-left: 1.5rem;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.preview-timeline::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--admin-border);
+}
+
+.preview-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.preview-dot {
+    position: absolute;
+    left: -1.5rem;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--admin-purple);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 2px var(--admin-purple);
+    z-index: 1;
+}
+
+.preview-date {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--admin-purple);
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.preview-content {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.preview-content h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin-bottom: 0.25rem;
+}
+
+.preview-content h4 {
+    font-size: 0.9rem;
+    color: var(--admin-text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.preview-description {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.preview-description li {
+    color: var(--admin-text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+    position: relative;
+    line-height: 1.4;
+}
+
+.preview-description li::before {
+    content: '▹';
+    position: absolute;
+    left: 0;
+    color: var(--admin-purple);
+}
+
+.preview-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--admin-text-muted);
+}
+
+.preview-note {
+    margin-top: 1.5rem;
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--admin-border);
+}
+
+.preview-note p {
+    color: var(--admin-text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.view-live-link {
+    color: var(--admin-purple);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.view-live-link:hover {
+    text-decoration: underline;
+}
+
+.text-muted {
+    color: var(--admin-text-muted);
+    text-align: center;
+    padding: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .triple-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

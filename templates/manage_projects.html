@@ -1,0 +1,653 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="manage-section">
+    <div class="section-header">
+        <h1>PROJECTS</h1>
+    </div>
+    
+    <div class="triple-layout">
+        <div class="form-panel">
+            <h2 class="panel-title">
+                {% if edit_mode %}EDIT PROJECT{% else %}ADD NEW PROJECT{% endif %}
+            </h2>
+            
+            <form method="POST" class="form" {% if edit_mode %}action="{% url 'edit_project' project.id %}"{% else %}action="{% url 'add_project' %}"{% endif %} enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="title">Project Title</label>
+                    <input type="text" id="title" name="title" value="{{ project.title|default:'' }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Short Description</label>
+                    <textarea id="description" name="description" rows="2" maxlength="300" required>{{ project.description|default:'' }}</textarea>
+                    <small class="field-note">Max 300 characters</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="full_description">Full Description</label>
+                    <textarea id="full_description" name="full_description" rows="4">{{ project.full_description|default:'' }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tech_stack">Tech Stack</label>
+                    <input type="text" id="tech_stack" name="tech_stack" value="{{ project.tech_stack|default:'' }}" placeholder="React, Python, Django, PostgreSQL" required>
+                    <small class="field-note">Comma separated</small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="link">Live Link (Optional)</label>
+                        <input type="url" id="link" name="link" value="{{ project.link|default:'' }}" placeholder="https://example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="github_link">GitHub Link</label>
+                        <input type="url" id="github_link" name="github_link" value="{{ project.github_link|default:'' }}" placeholder="https://github.com/username/repo" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status" required>
+                            <option value="ongoing" {% if project.status == 'ongoing' %}selected{% endif %}>Ongoing</option>
+                            <option value="completed" {% if project.status == 'completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="order">Display Order</label>
+                        <input type="number" id="order" name="order" value="{{ project.order|default:'0' }}">
+                        <small class="field-note">Lower numbers appear first</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="image">Project Image (Optional)</label>
+                    {% if project.image %}
+                        <div class="current-image">
+                            <img src="{{ project.image.url }}" alt="Current" class="preview-thumb">
+                        </div>
+                    {% endif %}
+                    <input type="file" id="image" name="image" accept="image/*">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        {% if edit_mode %}UPDATE PROJECT{% else %}ADD PROJECT{% endif %}
+                    </button>
+                    {% if edit_mode %}
+                        <a href="{% url 'manage_projects' %}" class="btn-secondary">CANCEL</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        
+        <div class="list-panel">
+            <h2 class="panel-title">EXISTING PROJECTS</h2>
+            
+            <div class="projects-list">
+                {% for proj in projects %}
+                <div class="project-item {% if proj.id == request.resolver_match.kwargs.pk %}active{% endif %}">
+                    <div class="project-item-content">
+                        <div class="project-item-header">
+                            <h3>{{ proj.title }}</h3>
+                            <span class="project-tech-badge">{{ proj.tech_stack|truncatechars:30 }}</span>
+                        </div>
+                        <p class="project-item-description">{{ proj.description|truncatechars:80 }}</p>
+                        <div class="project-meta">
+                            <span class="status-indicator {% if proj.status == 'ongoing' %}status-ongoing{% else %}status-completed{% endif %}">
+                                {{ proj.status|title }}
+                            </span>
+                            {% if proj.link %}
+                                <span class="link-indicator">🔗 Live</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="project-item-actions">
+                        <a href="{% url 'edit_project' proj.id %}" class="btn-icon" title="Edit">✎</a>
+                        <a href="{% url 'delete_project' proj.id %}" class="btn-icon delete" title="Delete" onclick="return confirm('Delete this project?')">🗑</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No projects added yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="preview-panel">
+            <h2 class="panel-title">LIVE PREVIEW</h2>
+            <div class="live-preview">
+                <div class="preview-grid">
+                    {% if edit_mode and project %}
+                        <div class="preview-tile">
+                            {% if project.image %}
+                                <div class="preview-image">
+                                    <img src="{{ project.image.url }}" alt="{{ project.title }}">
+                                </div>
+                            {% endif %}
+                            <div class="preview-content">
+                                <h3>{{ project.title|default:'Project Title' }}</h3>
+                                <div class="preview-tech">{{ project.tech_stack|default:'Tech Stack' }}</div>
+                                <p class="preview-description">{{ project.description|default:'Project description will appear here'|truncatechars:100 }}</p>
+                                <div class="preview-status">
+                                    <span class="preview-badge {% if project.status == 'ongoing' %}preview-ongoing{% else %}preview-completed{% endif %}">
+                                        {{ project.status|default:'ongoing'|title }}
+                                    </span>
+                                </div>
+                                <div class="preview-links">
+                                    {% if project.link %}
+                                        <span class="preview-link">Live Demo →</span>
+                                    {% endif %}
+                                    {% if project.github_link %}
+                                        <span class="preview-link">GitHub →</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        {% for proj in projects|slice:":4" %}
+                        <div class="preview-tile">
+                            {% if proj.image %}
+                                <div class="preview-image">
+                                    <img src="{{ proj.image.url }}" alt="{{ proj.title }}">
+                                </div>
+                            {% endif %}
+                            <div class="preview-content">
+                                <h3>{{ proj.title|truncatechars:20 }}</h3>
+                                <div class="preview-tech">{{ proj.tech_stack|truncatechars:20 }}</div>
+                                <p class="preview-description">{{ proj.description|truncatechars:60 }}</p>
+                                <div class="preview-status">
+                                    <span class="preview-badge {% if proj.status == 'ongoing' %}preview-ongoing{% else %}preview-completed{% endif %}">
+                                        {{ proj.status|title }}
+                                    </span>
+                                </div>
+                                <div class="preview-links">
+                                    {% if proj.link %}
+                                        <span class="preview-link">Live →</span>
+                                    {% endif %}
+                                    {% if proj.github_link %}
+                                        <span class="preview-link">GitHub →</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="preview-empty">
+                            <p>No projects to preview</p>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="preview-note">
+                    <p>This is how your projects appear on the public page</p>
+                    <a href="{% url 'projects' %}" target="_blank" class="view-live-link">View Live Page →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --admin-purple: #8b5cf6;
+    --admin-purple-dark: #7c3aed;
+    --admin-purple-light: #a78bfa;
+    --admin-purple-glow: rgba(139, 92, 246, 0.2);
+    --admin-bg: #ffffff;
+    --admin-text: #1f2937;
+    --admin-text-secondary: #4b5563;
+    --admin-text-muted: #6b7280;
+    --admin-border: #e5e7eb;
+    --admin-card: #f9fafb;
+    --admin-danger: #ef4444;
+}
+
+.manage-section {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.section-header {
+    margin-bottom: 2rem;
+}
+
+.section-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--admin-text);
+}
+
+.triple-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1.2fr;
+    gap: 1.5rem;
+}
+
+.form-panel, .list-panel, .preview-panel {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.panel-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: var(--admin-text);
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.form-group select {
+    cursor: pointer;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--admin-purple);
+    box-shadow: 0 0 0 3px var(--admin-purple-glow);
+}
+
+.field-note {
+    display: block;
+    color: var(--admin-text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.current-image {
+    margin-bottom: 1rem;
+}
+
+.preview-thumb {
+    max-width: 200px;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn-primary {
+    background: var(--admin-purple);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    background: var(--admin-purple-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--admin-purple-glow);
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    color: var(--admin-text-secondary);
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-secondary:hover {
+    border-color: var(--admin-purple);
+    color: var(--admin-purple);
+}
+
+.projects-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.project-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem;
+    border-bottom: 1px solid var(--admin-border);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.project-item:last-child {
+    border-bottom: none;
+}
+
+.project-item:hover {
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.project-item.active {
+    background: rgba(139, 92, 246, 0.1);
+    border-left: 3px solid var(--admin-purple);
+}
+
+.project-item-content {
+    flex: 1;
+}
+
+.project-item-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.project-item-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--admin-text);
+}
+
+.project-tech-badge {
+    color: var(--admin-purple);
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.project-item-description {
+    color: var(--admin-text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+}
+
+.project-meta {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.status-indicator {
+    display: inline-block;
+    padding: 0.2rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-ongoing {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid #f59e0b;
+}
+
+.status-completed {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid #10b981;
+}
+
+.link-indicator {
+    color: var(--admin-purple);
+    font-size: 0.75rem;
+}
+
+.project-item-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-left: 1rem;
+}
+
+.btn-icon {
+    color: var(--admin-text-secondary);
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+
+.btn-icon:hover {
+    color: var(--admin-purple);
+}
+
+.btn-icon.delete:hover {
+    color: var(--admin-danger);
+}
+
+.live-preview {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid var(--admin-border);
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.preview-tile {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.preview-tile:hover {
+    transform: translateY(-2px);
+    border-color: var(--admin-purple);
+    box-shadow: 0 4px 12px var(--admin-purple-glow);
+}
+
+.preview-image {
+    width: 100%;
+    height: 100px;
+    overflow: hidden;
+}
+
+.preview-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-content {
+    padding: 0.75rem;
+}
+
+.preview-content h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.preview-tech {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--admin-purple);
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.preview-description {
+    color: var(--admin-text-secondary);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.preview-status {
+    margin-bottom: 0.5rem;
+}
+
+.preview-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.preview-ongoing {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid #f59e0b;
+}
+
+.preview-completed {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid #10b981;
+}
+
+.preview-links {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.preview-link {
+    color: var(--admin-purple);
+    font-size: 0.7rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.preview-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    color: var(--admin-text-muted);
+}
+
+.preview-note {
+    margin-top: 1rem;
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--admin-border);
+}
+
+.preview-note p {
+    color: var(--admin-text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.view-live-link {
+    color: var(--admin-purple);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.view-live-link:hover {
+    text-decoration: underline;
+}
+
+.text-muted {
+    color: var(--admin-text-muted);
+    text-align: center;
+    padding: 2rem;
+}
+
+@media (max-width: 1200px) {
+    .triple-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .preview-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .preview-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .project-item-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+}
+</style>
+{% endblock %}

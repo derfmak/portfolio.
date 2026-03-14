@@ -1,0 +1,430 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="profile-management">
+    <div class="management-header">
+        <h1>EDIT PROFILE</h1>
+        <a href="{% url 'dashboard' %}" class="back-link">← Back to Dashboard</a>
+    </div>
+    
+    <div class="dual-layout">
+        <div class="form-panel">
+            <h2 class="panel-title">PROFILE INFORMATION</h2>
+            
+            <form method="POST" enctype="multipart/form-data" class="form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" value="{{ profile.name }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="title">Professional Title</label>
+                    <input type="text" id="title" name="title" value="{{ profile.title }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bio">Bio</label>
+                    <textarea id="bio" name="bio" rows="5" required>{{ profile.bio }}</textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="github">GitHub URL</label>
+                        <input type="url" id="github" name="github" value="{{ profile.github }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="linkedin">LinkedIn URL</label>
+                        <input type="url" id="linkedin" name="linkedin" value="{{ profile.linkedin }}">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="{{ profile.email }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="text" id="phone" name="phone" value="{{ profile.phone }}">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location" value="{{ profile.location }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="tech_stack">Tech Stack (comma separated)</label>
+                    <input type="text" id="tech_stack" name="tech_stack" value="{{ profile.tech_stack|join:', ' }}">
+                    <small class="field-note">Example: React, Python, Django, PostgreSQL</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="profile_image">Profile Image</label>
+                    {% if profile.profile_image %}
+                        <div class="current-image">
+                            <img src="{{ profile.profile_image.url }}" alt="Current" class="preview-thumb">
+                        </div>
+                    {% endif %}
+                    <input type="file" id="profile_image" name="profile_image" accept="image/*">
+                    <small class="field-note">Recommended: Square image, at least 500x500px</small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">SAVE CHANGES</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="preview-panel">
+            <h2 class="panel-title">LIVE PREVIEW</h2>
+            <div class="live-preview">
+                <div class="preview-card">
+                    <div class="preview-profile">
+                        <div class="preview-image-wrapper">
+                            <img src="{% if profile.profile_image %}{{ profile.profile_image.url }}{% else %}{% static 'images/profile.jpg' %}{% endif %}" alt="Profile Preview" class="preview-image">
+                        </div>
+                        
+                        <h3 class="preview-name">{{ profile.name|default:'FREDRICK MAKAU' }}</h3>
+                        <p class="preview-title">{{ profile.title|default:'WEB DEVELOPER | SOFTWARE QUALITY ASSURANCE' }}</p>
+                        
+                        <div class="preview-bio">
+                            {{ profile.bio|default:'A motivated Computer Scientist with a strong foundation in web development...'|truncatechars:150 }}
+                        </div>
+                        
+                        <div class="preview-links">
+                            <div class="preview-link-item">
+                                <span class="link-label">GitHub:</span>
+                                <span class="link-value">{{ profile.github|default:'Not set' }}</span>
+                            </div>
+                            <div class="preview-link-item">
+                                <span class="link-label">LinkedIn:</span>
+                                <span class="link-value">{{ profile.linkedin|default:'Not set' }}</span>
+                            </div>
+                            <div class="preview-link-item">
+                                <span class="link-label">Email:</span>
+                                <span class="link-value">{{ profile.email|default:'Not set' }}</span>
+                            </div>
+                            <div class="preview-link-item">
+                                <span class="link-label">Location:</span>
+                                <span class="link-value">{{ profile.location|default:'Not set' }}</span>
+                            </div>
+                            <div class="preview-link-item">
+                                <span class="link-label">Phone:</span>
+                                <span class="link-value">{{ profile.phone|default:'Not set' }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="preview-tech">
+                            {% if profile.tech_stack %}
+                                {% for tech in profile.tech_stack %}
+                                    <span class="preview-tech-tag">{{ tech }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="preview-tech-tag">React</span>
+                                <span class="preview-tech-tag">Python</span>
+                                <span class="preview-tech-tag">Django</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="preview-note">
+                        <p>This is how your profile appears on the public home page</p>
+                        <a href="{% url 'home' %}" target="_blank" class="view-live-link">View Live Page →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --admin-purple: #8b5cf6;
+    --admin-purple-dark: #7c3aed;
+    --admin-purple-light: #a78bfa;
+    --admin-purple-glow: rgba(139, 92, 246, 0.2);
+    --admin-bg: #ffffff;
+    --admin-text: #1f2937;
+    --admin-text-secondary: #4b5563;
+    --admin-text-muted: #6b7280;
+    --admin-border: #e5e7eb;
+    --admin-card: #f9fafb;
+    --admin-danger: #ef4444;
+}
+
+.profile-management {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.management-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--admin-text);
+}
+
+.back-link {
+    color: var(--admin-text-secondary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--admin-purple);
+}
+
+.dual-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.form-panel, .preview-panel {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.panel-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--admin-text);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: var(--admin-text);
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--admin-purple);
+    box-shadow: 0 0 0 3px var(--admin-purple-glow);
+}
+
+.field-note {
+    display: block;
+    color: var(--admin-text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.current-image {
+    margin-bottom: 1rem;
+}
+
+.preview-thumb {
+    max-width: 100px;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+}
+
+.form-actions {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.btn-primary {
+    background: var(--admin-purple);
+    border: none;
+    border-radius: 8px;
+    padding: 1rem 3rem;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    background: var(--admin-purple-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--admin-purple-glow);
+}
+
+.live-preview {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid var(--admin-border);
+}
+
+.preview-card {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.preview-profile {
+    text-align: center;
+}
+
+.preview-image-wrapper {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    border: 3px solid var(--admin-purple);
+    overflow: hidden;
+}
+
+.preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--admin-text);
+    margin-bottom: 0.5rem;
+}
+
+.preview-title {
+    color: var(--admin-purple);
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.preview-bio {
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.preview-links {
+    text-align: left;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.preview-link-item {
+    display: flex;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.link-label {
+    color: var(--admin-text-muted);
+    width: 80px;
+    flex-shrink: 0;
+}
+
+.link-value {
+    color: var(--admin-text-secondary);
+    word-break: break-all;
+}
+
+.preview-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.preview-tech-tag {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid var(--admin-purple);
+    border-radius: 4px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    color: var(--admin-purple);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.preview-note {
+    margin-top: 1.5rem;
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--admin-border);
+}
+
+.preview-note p {
+    color: var(--admin-text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.view-live-link {
+    color: var(--admin-purple);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.view-live-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .dual-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .management-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+</style>
+{% endblock %}

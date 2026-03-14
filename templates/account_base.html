@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fredrick Makau - Account</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --admin-purple: #8b5cf6;
+            --admin-purple-dark: #7c3aed;
+            --admin-purple-light: #a78bfa;
+            --admin-purple-glow: rgba(139, 92, 246, 0.2);
+            --admin-bg: #ffffff;
+            --admin-text: #1f2937;
+            --admin-text-secondary: #4b5563;
+            --admin-text-muted: #6b7280;
+            --admin-border: #e5e7eb;
+            --admin-card: #f9fafb;
+            --admin-danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--admin-card) 0%, #ffffff 100%);
+            color: var(--admin-text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .account-nav {
+            background: var(--admin-purple);
+            padding: 1rem 0;
+            box-shadow: 0 4px 20px var(--admin-purple-glow);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: #ffffff;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-logo:hover {
+            opacity: 0.9;
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 24px;
+            width: 100%;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .account-footer {
+            background: var(--admin-purple);
+            padding: 1.5rem 0;
+            margin-top: auto;
+            text-align: center;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.85rem;
+        }
+
+        .footer-container p {
+            opacity: 0.8;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-logo {
+                font-size: 1.2rem;
+            }
+            
+            .main-content {
+                margin: 1.5rem auto;
+                padding: 0 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="account-nav">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="nav-logo">FREDRICK MAKAU</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="account-footer">
+        <div class="footer-container">
+            <p>© {% now "Y" %} Fredrick Makau. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

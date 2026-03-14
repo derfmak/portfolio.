@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="about-page">
+    <div class="profile-container">
+        <div class="profile-image-wrapper">
+            <img src="{% if profile.profile_image %}{{ profile.profile_image.url }}{% else %}{% static 'images/profile.jpg' %}{% endif %}" alt="Fredrick Makau" class="profile-image">
+        </div>
+    </div>
+    
+    <h1 class="name-title">{{ profile.name }}</h1>
+    <h2 class="role-title">{{ profile.title }}</h2>
+    
+    <div class="bio-container">
+        <p class="bio-text">{{ profile.bio }}</p>
+    </div>
+    
+    <div class="contact-links">
+        <a href="{{ profile.github }}" target="_blank" class="contact-link">
+            <span>GitHub</span>
+            <span class="link-handle">{{ profile.github|cut:"https://github.com/" }}</span>
+        </a>
+        <a href="{{ profile.linkedin }}" target="_blank" class="contact-link">
+            <span>LinkedIn</span>
+            <span class="link-handle">{{ profile.linkedin|cut:"https://linkedin.com/in/" }}</span>
+        </a>
+        <a href="mailto:{{ profile.email }}" class="contact-link">
+            <span>Email</span>
+            <span class="link-handle">{{ profile.email }}</span>
+        </a>
+        <a href="#" class="contact-link">
+            <span>Location</span>
+            <span class="link-handle">{{ profile.location }}</span>
+        </a>
+    </div>
+    
+    <div class="tech-stack">
+        {% for tech in profile.tech_stack %}
+            <span class="tech-tag">{{ tech }}</span>
+        {% endfor %}
+    </div>
+</section>
+
+<style>
+.about-page {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.profile-container {
+    margin-bottom: 2rem;
+}
+
+.profile-image-wrapper {
+    width: 280px;
+    height: 280px;
+    margin: 0 auto;
+    border-radius: 50%;
+    border: 3px solid var(--green-primary);
+    box-shadow: 0 0 30px var(--green-glow);
+    animation: glowPulse 4s ease-in-out infinite;
+    overflow: hidden;
+}
+
+.profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.name-title {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.role-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--green-primary);
+    margin-bottom: 2rem;
+    letter-spacing: 0.05em;
+}
+
+.bio-container {
+    max-width: 600px;
+    margin: 0 auto 3rem;
+}
+
+.bio-text {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.8;
+}
+
+.contact-links {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.contact-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color var(--transition-speed) ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.contact-link:hover {
+    color: var(--green-primary);
+}
+
+.link-handle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.contact-link:hover .link-handle {
+    color: var(--green-primary);
+}
+
+.tech-stack {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.tech-tag {
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: var(--green-primary);
+    font-family: 'JetBrains Mono', monospace;
+    transition: all var(--transition-speed) ease;
+}
+
+.tech-tag:hover {
+    background: rgba(74, 222, 128, 0.2);
+    border-color: var(--green-primary);
+    transform: translateY(-2px);
+}
+
+@keyframes glowPulse {
+    0%, 100% {
+        box-shadow: 0 0 30px var(--green-glow);
+    }
+    50% {
+        box-shadow: 0 0 50px var(--green-glow-strong);
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-image-wrapper {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .name-title {
+        font-size: 2rem;
+    }
+    
+    .role-title {
+        font-size: 1rem;
+    }
+    
+    .contact-links {
+        gap: 1rem;
+        flex-direction: column;
+        align-items: center;
+    }
+}
+</style>
+{% endblock %}
